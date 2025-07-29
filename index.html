@@ -472,26 +472,16 @@
     </div>
 
     <script>
-        function sendData1() {
-            var text = document.getElementById("TextBox1").value;
+        function sendData(row, textBoxId) {
+            var text = document.getElementById(textBoxId).value;
             var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text), true);
+            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
             xhttp.send();
         }
 
-        function sendData2() {
-            var text = document.getElementById("TextBox2").value;
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text), true);
-            xhttp.send();
-        }
-
-        function sendData3() {
-            var text = document.getElementById("TextBox3").value;
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text), true);
-            xhttp.send();
-        }
+        function sendData1() { sendData(0, "TextBox1"); }
+        function sendData2() { sendData(1, "TextBox2"); }
+        function sendData3() { sendData(2, "TextBox3"); }
     </script>
 </body>
 
