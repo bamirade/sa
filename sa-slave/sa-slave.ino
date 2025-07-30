@@ -5,11 +5,12 @@
 #define DISPLAYS_HIGH 1
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
 
-char row2Text[100] = "Jasselle Salvador X Christ Ian Bienne Lacara";
+char row2Text[100] = "Please_proceed_quietly_classes_are_in_session";
 uint32_t scrollPos = 0;
 uint32_t prevMillis = 0;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial.setTimeout(100);
   delay(500);
@@ -19,10 +20,13 @@ void setup() {
   dmd.begin();
 }
 
-void loop() {
-  if (Serial.available()) {
+void loop()
+{
+  if (Serial.available())
+  {
     String incoming = Serial.readStringUntil('\n');
-    if (incoming.startsWith("ROW2:")) {
+    if (incoming.startsWith("ROW2:"))
+    {
       incoming.remove(0, 5);
       incoming.trim();
       incoming.toCharArray(row2Text, sizeof(row2Text));
@@ -32,12 +36,14 @@ void loop() {
   scrollTextRow(row2Text, 0, 50);
 }
 
-void scrollTextRow(const char* text, int y, uint8_t speed) {
+void scrollTextRow(const char *text, int y, uint8_t speed)
+{
   dmd.selectFont(Arial14);
   int width = dmd.width;
   int fullScroll = dmd.stringWidth(text) + width;
 
-  if ((millis() - prevMillis) > speed) {
+  if ((millis() - prevMillis) > speed)
+  {
     prevMillis = millis();
     scrollPos = (scrollPos + 1) % fullScroll;
 

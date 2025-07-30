@@ -466,18 +466,32 @@
     </div>
 
     <script>
-        function sendData(row, textBoxId) {
-            var text = document.getElementById(textBoxId).value;
-            text = text.replace(/ /g, "_");
-            var xhttp = new XMLHttpRequest();
-            console.log(text)
-            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
-            xhttp.send();
-        }
+    async function sendData(row, textBoxId) {
+        let text = document.getElementById(textBoxId).value;
 
-        function sendData1() { sendData(0, "TextBox1"); }
-        function sendData2() { sendData(1, "TextBox2"); }
-    </script>
+        text = await sanitizeText(text);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
+        xhttp.send();
+    }
+
+    async function sanitizeText(input) {
+
+        return input
+            .replace(/ /g, "_")
+            .split('')
+            .filter(c => {
+                const code = c.charCodeAt(0);
+                return code >= 33 && code <= 127;
+            })
+            .join('');
+    }
+
+    function sendData1() { sendData(0, "TextBox1"); }
+    function sendData2() { sendData(1, "TextBox2"); }
+</script>
+
 
 </body>
 

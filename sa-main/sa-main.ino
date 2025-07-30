@@ -14,11 +14,8 @@ ESP8266WebServer server(80);
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
 
 #define NUM_ROWS 2
-#define MAX_TEXT_LENGTH 100
 
-char TextBuffers[NUM_ROWS][MAX_TEXT_LENGTH] = {
-    "Flames Hope", "Row 2"};
-char *Text[] = {TextBuffers[0], TextBuffers[1]};
+String Text[NUM_ROWS] = {"Welcome_To_AMA_Santiago", "Please_proceed_quietly_classes_are_in_session"};
 
 uint32_t scrollPos[NUM_ROWS] = {0, 0};
 uint32_t prevMillis[NUM_ROWS] = {0, 0};
@@ -40,19 +37,14 @@ void handle_Incoming_Text()
 
     if (row >= 0 && row < NUM_ROWS)
     {
-      int maxLen = sizeof(TextBuffers[row]) - 1;  // max 99 chars
-      if (incoming.length() > maxLen)
-      {
-        incoming = incoming.substring(0, maxLen);  // truncate safely
-      }
+      Text[row] = incoming;
 
-      incoming.toCharArray(TextBuffers[row], maxLen + 1); // +1 for null terminator
-      Serial.printf("Row %d text: %s\n", row, TextBuffers[row]);
+      Serial.printf("Row %d text: %s\n", row, Text[row].c_str());
 
       if (row == 1)
       {
         Serial.print("ROW2:");
-        Serial.println(TextBuffers[1]);
+        Serial.println(Text[1]);
       }
 
       server.send(200, "text/plain", "Text received for row " + String(row));
@@ -80,12 +72,14 @@ void setup()
   WiFi.softAP(ssid, password);
   IPAddress apip = WiFi.softAPIP();
 
+  Serial.println();
+  Serial.println("Reset reason:");
+  Serial.println(ESP.getResetReason());
+
   Serial.print("Connect to: ");
   Serial.println(ssid);
   Serial.print("IP Address: ");
   Serial.println(apip);
-  Serial.println("Reset reason:");
-  Serial.println(ESP.getResetReason());
 
   server.on("/", handleRoot);
   server.on("/setText", handle_Incoming_Text);
@@ -112,15 +106,23 @@ void loop()
 void scrollTextRow(int index, int y, uint8_t speed)
 {
   dmd.selectFont(Arial14);
-  int width = dmd.width;
-  int fullScroll = dmd.stringWidth(Text[index]) + width;
+  int screenWidth = dmd.width;
 
   if ((millis() - prevMillis[index]) > speed)
   {
     prevMillis[index] = millis();
-    scrollPos[index] = (scrollPos[index] + 1) % fullScroll;
 
-    dmd.clearScreen();
-    dmd.drawString(width - scrollPos[index], y, Text[index]);
+    String text = Text[index];
+    int totalWidth = dmd.stringWidth(text.c_str());
+
+    dmd.drawFilledBox(0, y, screenWidth, y + 14, GRAPHICS_OFF);
+
+    dmd.drawString(screenWidth - scrollPos[index], y, text.c_str());
+
+    scrollPos[index]++;
+    if (scrollPos[index] > totalWidth + screenWidth)
+    {
+      scrollPos[index] = 0;
+    }
   }
 }

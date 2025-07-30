@@ -459,31 +459,42 @@ const char MAIN_page[] PROGMEM = R"=====(
         </div><br>
 
         <footer style="text-align: center; padding: 1em 0; font-size: 0.9em; color: #555;">
-            &copy; 2025 Created by Christ Ian Bienne Lacara – AMACC Santiago, Batch 2025
+            &copy; 2025 Created by Christ Ian Bienne Lacara &ndash; AMACC Santiago, Batch 2025
         </footer>
 
         <br><br>
 
     </div>
 
-    <script>
-        function sendData(row, textBoxId) {
-            var text = document.getElementById(textBoxId).value;
-            text = text.replace(/ /g, "_");
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
-            xhttp.send();
-        }
 
-        function sendData1() { sendData(0, "TextBox1"); }
-        function sendData2() { sendData(1, "TextBox2"); }
-    </script>
+<script>
+    async function sendData(row, textBoxId) {
+        let text = document.getElementById(textBoxId).value;
 
+        text = await sanitizeText(text);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
+        xhttp.send();
+    }
+
+    async function sanitizeText(input) {
+        return input
+            .replace(/ /g, "_")
+            .split('')
+            .filter(c => {
+                const code = c.charCodeAt(0);
+                return code >= 33 && code <= 127;
+            })
+            .join('');
+    }
+
+    function sendData1() { sendData(0, "TextBox1"); }
+    function sendData2() { sendData(1, "TextBox2"); }
+</script>
 </body>
 
 </html>
-
-
 
 
 
