@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <DMD2.h>
-#include <fonts/ElektronMart6x8.h>
+#include "ElektronMart6x8.h"
 #include "PageIndex.h"
 
 #define DISPLAYS_WIDE 5
@@ -15,10 +15,8 @@ const char* password = "1234567890";
 
 ESP8266WebServer server(80);
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
-SoftDMD softDmd(&dmd);
-DMD_TextBox box(&softDmd, 0, 0, panelWidth * DISPLAYS_WIDE, panelHeight * DISPLAYS_HIGH);
 
-char TextBuffers[NUM_ROWS][256] = {"", "", ""};
+char TextBuffers[NUM_ROWS][256] = { "", "", "" };
 
 void setPixelZigzag(int x, int y, bool on) {
   int panelIndex = x / panelWidth;
@@ -38,22 +36,20 @@ void setPixelZigzag(int x, int y, bool on) {
 }
 
 void scrollTextRow(int row, int yOffset, uint8_t speed) {
-  softDmd.setBrightness(255);
-  softDmd.selectFont(ElektronMart6x8);
-  softDmd.begin();
+  dmd.selectFont(ElektronMart6x8);
 
-  int textWidth = softDmd.stringWidth(TextBuffers[row]);
   int screenWidth = panelWidth * DISPLAYS_WIDE;
+  int textWidth = dmd.stringWidth(TextBuffers[row]);
 
   for (int x = screenWidth; x >= -textWidth; x--) {
-    softDmd.clearScreen();
-    softDmd.drawString(x, yOffset, TextBuffers[row]);
+    dmd.clearScreen();
+    dmd.drawString(x, yOffset, TextBuffers[row]);
     delay(speed);
   }
 }
 
 void handleRoot() {
-  server.send_P(200, "text/html", MAIN_page); // from PageIndex.h
+  server.send_P(200, "text/html", MAIN_page);  // HTML in PageIndex.h
 }
 
 void handle_Incoming_Text() {
@@ -84,7 +80,7 @@ void setup() {
 void loop() {
   server.handleClient();
 
-  scrollTextRow(0, 0, 30);         // Top third
-  scrollTextRow(1, 11, 30);        // Middle third
-  scrollTextRow(2, 22, 30);        // Bottom third
+  scrollTextRow(0, 0, 30);   // Top third
+  scrollTextRow(1, 11, 30);  // Middle third
+  scrollTextRow(2, 22, 30);  // Bottom third
 }
