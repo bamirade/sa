@@ -11,6 +11,7 @@ uint32_t prevMillis = 0;
 
 void setup() {
   Serial.begin(115200);
+  Serial.setTimeout(100);
   delay(500);
 
   dmd.setBrightness(255);
@@ -28,20 +29,19 @@ void loop() {
     }
   }
 
-  dmd.clearScreen();
   scrollTextRow(row2Text, 0, 50);
-  delay(30);
 }
 
 void scrollTextRow(const char* text, int y, uint8_t speed) {
-  int width = dmd.width;
   dmd.selectFont(Arial14);
+  int width = dmd.width;
   int fullScroll = dmd.stringWidth(text) + width;
 
   if ((millis() - prevMillis) > speed) {
     prevMillis = millis();
     scrollPos = (scrollPos + 1) % fullScroll;
-  }
 
-  dmd.drawString(width - scrollPos, y, text);
+    dmd.clearScreen();
+    dmd.drawString(width - scrollPos, y, text);
+  }
 }
