@@ -14,8 +14,9 @@ ESP8266WebServer server(80);
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
 
 #define NUM_ROWS 2
+#define MAX_TEXT_LENGTH 100
 
-char TextBuffers[NUM_ROWS][100] = {
+char TextBuffers[NUM_ROWS][MAX_TEXT_LENGTH] = {
     "Flames Hope", "Row 2"};
 char *Text[] = {TextBuffers[0], TextBuffers[1]};
 
@@ -39,8 +40,14 @@ void handle_Incoming_Text()
 
     if (row >= 0 && row < NUM_ROWS)
     {
-      incoming.toCharArray(TextBuffers[row], sizeof(TextBuffers[row]));
-      Serial.printf("Row %d text: %s\n", row, incoming.c_str());
+      int maxLen = sizeof(TextBuffers[row]) - 1;  // max 99 chars
+      if (incoming.length() > maxLen)
+      {
+        incoming = incoming.substring(0, maxLen);  // truncate safely
+      }
+
+      incoming.toCharArray(TextBuffers[row], maxLen + 1); // +1 for null terminator
+      Serial.printf("Row %d text: %s\n", row, TextBuffers[row]);
 
       if (row == 1)
       {
@@ -77,6 +84,8 @@ void setup()
   Serial.println(ssid);
   Serial.print("IP Address: ");
   Serial.println(apip);
+  Serial.println("Reset reason:");
+  Serial.println(ESP.getResetReason());
 
   server.on("/", handleRoot);
   server.on("/setText", handle_Incoming_Text);

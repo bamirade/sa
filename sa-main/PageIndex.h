@@ -469,6 +469,7 @@ const char MAIN_page[] PROGMEM = R"=====(
     <script>
         function sendData(row, textBoxId) {
             var text = document.getElementById(textBoxId).value;
+            text = text.replace(/ /g, "_");
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
             xhttp.send();
@@ -477,9 +478,11 @@ const char MAIN_page[] PROGMEM = R"=====(
         function sendData1() { sendData(0, "TextBox1"); }
         function sendData2() { sendData(1, "TextBox2"); }
     </script>
+
 </body>
 
 </html>
+
 
 
 
