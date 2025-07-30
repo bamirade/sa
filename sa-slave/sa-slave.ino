@@ -5,7 +5,7 @@
 #define DISPLAYS_HIGH 1
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
 
-char row2Text[100] = "Waiting for main...";
+char row2Text[100] = "Jasselle Salvador X Christ Ian Bienne Lacara";
 uint32_t scrollPos = 0;
 uint32_t prevMillis = 0;
 
@@ -29,7 +29,7 @@ void loop() {
   }
 
   dmd.clearScreen();
-  scrollTextRow(row2Text, 8, 50);
+  scrollTextRow(row2Text, 0, 50);
   delay(30);
 }
 
