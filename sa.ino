@@ -1,97 +1,90 @@
+#include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <DMD2.h>
-#include <fonts/Arial14.h>
+#include <fonts/ElektronMart6x8.h>
 #include "PageIndex.h"
+
+#define DISPLAYS_WIDE 5
+#define DISPLAYS_HIGH 2
+#define panelWidth 32
+#define panelHeight 16
+#define NUM_ROWS 3
 
 const char* ssid = "Led Matrix";
 const char* password = "1234567890";
 
 ESP8266WebServer server(80);
+SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
+SoftDMD softDmd(&dmd);
+DMD_TextBox box(&softDmd, 0, 0, panelWidth * DISPLAYS_WIDE, panelHeight * DISPLAYS_HIGH);
 
-// Display config
-#define DISPLAYS_WIDE 5
-#define DISPLAYS_HIGH 1
-SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH); // Use SPI pins (hardware SPI)
+char TextBuffers[NUM_ROWS][256] = {"", "", ""};
 
-// Number of rows
-#define NUM_ROWS 3
+void setPixelZigzag(int x, int y, bool on) {
+  int panelIndex = x / panelWidth;
+  int localX = x % panelWidth;
+  int physX;
 
-// Buffers for each row
-char TextBuffers[NUM_ROWS][100] = {
-  "WELCOME TO AMA SANTIAGO", "", ""
-};
-char* Text[] = {TextBuffers[0], TextBuffers[1], TextBuffers[2]};
+  DMDGraphicsMode mode = on ? GRAPHICS_ON : GRAPHICS_OFF;
 
-// Scrolling state
-uint32_t scrollPos[NUM_ROWS] = {0, 0, 0};
-uint32_t prevMillis[NUM_ROWS] = {0, 0, 0};
-const uint8_t rowHeights[NUM_ROWS] = {0, 8, 16};
+  if (panelIndex < DISPLAYS_WIDE) {
+    physX = (DISPLAYS_WIDE - 1 - panelIndex) * panelWidth + localX;
+    dmd.setPixel(physX, y, mode);
+  } else {
+    int bottomPanel = panelIndex - DISPLAYS_WIDE;
+    physX = (DISPLAYS_WIDE - 1 - bottomPanel) * panelWidth + localX;
+    dmd.setPixel(physX, y + panelHeight, mode);
+  }
+}
+
+void scrollTextRow(int row, int yOffset, uint8_t speed) {
+  softDmd.setBrightness(255);
+  softDmd.selectFont(ElektronMart6x8);
+  softDmd.begin();
+
+  int textWidth = softDmd.stringWidth(TextBuffers[row]);
+  int screenWidth = panelWidth * DISPLAYS_WIDE;
+
+  for (int x = screenWidth; x >= -textWidth; x--) {
+    softDmd.clearScreen();
+    softDmd.drawString(x, yOffset, TextBuffers[row]);
+    delay(speed);
+  }
+}
 
 void handleRoot() {
-  server.send(200, "text/html", MAIN_page);
+  server.send_P(200, "text/html", MAIN_page); // from PageIndex.h
 }
 
 void handle_Incoming_Text() {
   if (server.hasArg("TextContents") && server.hasArg("row")) {
-    String incoming = server.arg("TextContents");
     int row = server.arg("row").toInt();
-
+    String content = server.arg("TextContents");
     if (row >= 0 && row < NUM_ROWS) {
-      Serial.printf("Row %d text: %s\n", row, incoming.c_str());
-      incoming.toCharArray(TextBuffers[row], sizeof(TextBuffers[row]));
-      server.send(200, "text/plain", "Text received for row " + String(row));
+      content.toCharArray(TextBuffers[row], sizeof(TextBuffers[row]));
+      server.send(200, "text/plain", "OK");
     } else {
       server.send(400, "text/plain", "Invalid row index");
     }
   } else {
-    server.send(400, "text/plain", "Missing TextContents or row");
+    server.send(400, "text/plain", "Missing parameters");
   }
 }
 
 void setup() {
-  Serial.begin(115200);
-  delay(500);
-
-  dmd.setBrightness(255);
-  dmd.selectFont(Arial14);
-  dmd.begin();
-
   WiFi.softAP(ssid, password);
-  IPAddress apip = WiFi.softAPIP();
-
-  Serial.printf("Connect to: %s\nIP Address: %s\n", ssid, apip.toString().c_str());
-
   server.on("/", handleRoot);
   server.on("/setText", handle_Incoming_Text);
   server.begin();
-  Serial.println("HTTP server started");
+
+  dmd.begin();
+  dmd.setBrightness(255);
 }
 
 void loop() {
   server.handleClient();
-  dmd.clearScreen();
 
-  for (int i = 0; i < NUM_ROWS; i++) {
-    scrollTextRow(i, rowHeights[i], 50);
-  }
-
-  delay(30); // adjust for smoothness
-}
-
-void scrollTextRow(int index, int y, uint8_t speed) {
-  int width = dmd.width;
-  dmd.selectFont(Arial14);
-
-  int fullScroll = dmd.stringWidth(Text[index]) + width;
-  if ((millis() - prevMillis[index]) > speed) {
-    prevMillis[index] = millis();
-
-    if (scrollPos[index] < fullScroll) {
-      scrollPos[index]++;
-    } else {
-      scrollPos[index] = 0;
-    }
-  }
-
-  dmd.drawString(width - scrollPos[index], y, Text[index]);
+  scrollTextRow(0, 0, 30);         // Top third
+  scrollTextRow(1, 11, 30);        // Middle third
+  scrollTextRow(2, 22, 30);        // Bottom third
 }
