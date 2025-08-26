@@ -458,7 +458,7 @@
         </div><br>
 
         <footer style="text-align: center; padding: 1em 0; font-size: 0.9em; color: #555;">
-            &copy; 2025 Created by Christ Ian Bienne Lacara &dash; AMACC Santiago, Batch 2025
+            &copy; 2025
         </footer>
 
         <br><br>
@@ -466,31 +466,31 @@
     </div>
 
     <script>
-    async function sendData(row, textBoxId) {
-        let text = document.getElementById(textBoxId).value;
+        async function sendData(row, textBoxId) {
+            let text = document.getElementById(textBoxId).value;
 
-        text = await sanitizeText(text);
+            text = await sanitizeText(text);
 
-        const xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
-        xhttp.send();
-    }
+            const xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "setText?TextContents=" + encodeURIComponent(text) + "&row=" + row, true);
+            xhttp.send();
+        }
 
-    async function sanitizeText(input) {
+        async function sanitizeText(input) {
 
-        return input
-            .replace(/ /g, "_")
-            .split('')
-            .filter(c => {
-                const code = c.charCodeAt(0);
-                return code >= 33 && code <= 127;
-            })
-            .join('');
-    }
+            return input
+                .replace(/ /g, "_")
+                .split('')
+                .filter(c => {
+                    const code = c.charCodeAt(0);
+                    return code >= 33 && code <= 127;
+                })
+                .join('');
+        }
 
-    function sendData1() { sendData(0, "TextBox1"); }
-    function sendData2() { sendData(1, "TextBox2"); }
-</script>
+        function sendData1() { sendData(0, "TextBox1"); }
+        function sendData2() { sendData(1, "TextBox2"); }
+    </script>
 
 
 </body>

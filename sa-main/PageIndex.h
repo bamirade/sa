@@ -459,7 +459,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         </div><br>
 
         <footer style="text-align: center; padding: 1em 0; font-size: 0.9em; color: #555;">
-            &copy; 2025 Created by Christ Ian Bienne Lacara &ndash; AMACC Santiago, Batch 2025
+            &copy; 2025
         </footer>
 
         <br><br>

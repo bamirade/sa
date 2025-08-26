@@ -1,9 +1,12 @@
 #include <DMD2.h>
 #include <fonts/Arial14.h>
+#include <SoftwareSerial.h>
 
 #define DISPLAYS_WIDE 5
 #define DISPLAYS_HIGH 1
 SPIDMD dmd(DISPLAYS_WIDE, DISPLAYS_HIGH);
+
+SoftwareSerial SerialUno2(2, 3);
 
 char row1Text[100] = "Welcome_To_AMA_Santiago";
 String buffer = "";
@@ -11,7 +14,7 @@ String buffer = "";
 void setup()
 {
     Serial.begin(9600);
-    Serial1.begin(9600); // Send to Uno 2
+    SerialUno2.begin(9600);
     delay(500);
 
     dmd.setBrightness(255);
@@ -37,7 +40,7 @@ void loop()
             }
             else if (buffer.startsWith("ROW2:"))
             {
-                Serial1.println(buffer); // Forward to Uno 2
+                SerialUno2.println(buffer);
             }
             buffer = "";
         }
